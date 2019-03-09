@@ -2,6 +2,7 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import axios from 'axios'
+import '../static/css/reset.css'
 import {
   Col,
   Menu,
@@ -25,7 +26,6 @@ import {
 } from 'element-ui';
 import App from './App'
 import router from './router'
-
 Vue.config.productionTip = false
 Vue.prototype.$axios = axios
 Vue.use(Menu).use(Submenu).use(MenuItem).use(MenuItemGroup).use(Input).use(Table).use(TableColumn)

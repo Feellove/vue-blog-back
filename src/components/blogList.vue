@@ -1,12 +1,34 @@
 <template>
   <div>
-    <el-table :data="tableData" border stripe style="width: 100%">
-      <el-table-column type="selection" width="36"></el-table-column>
-      <el-table-column prop="date" label="创建日期" width="180"></el-table-column>
-      <el-table-column prop="name" label="博客标题" width="180"></el-table-column>
-      <el-table-column prop="category" label="博客类别" width="180"></el-table-column>
-      <el-table-column prop="content" label="博客内容"></el-table-column>
-      <el-table-column label="操作" width="180">
+    <el-table
+      :data="articleLists"
+      fit
+      border
+      stripe
+      style="width: 100%"
+    >
+      <el-table-column
+        prop="_id"
+        type="selection"
+        width="36"
+      ></el-table-column>
+      <el-table-column
+        prop="articleName"
+        label="博客标题"
+      ></el-table-column>
+      <el-table-column
+        prop="articleClasses"
+        label="博客类别"
+      ></el-table-column>
+      <el-table-column
+        prop="createTime"
+        label="创建日期"
+      ></el-table-column>
+      <el-table-column
+        prop="clickTimes"
+        label="点击量"
+      ></el-table-column>
+      <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button
             size="medium"
@@ -21,7 +43,7 @@
             type="danger"
             icon="el-icon-delete"
             circle
-            @click="deleteRow(scope.$index, tableData)"
+            @click="deleteRow(scope.$index,scope.row)"
             title="删除"
           ></el-button>
         </template>
@@ -34,57 +56,79 @@
       @current-change="handleCurrentChange"
       :current-page="currentPage"
       :page-sizes="[10, 20, 30, 40]"
-      :page-size="100"
+      :page-size="pageSize"
       layout="total, sizes, prev, pager, next"
-      :total="400"
+      :total="total"
     ></el-pagination>
   </div>
 </template>
 
 <script>
+import url from "@/api.config.js";
 export default {
   data() {
     return {
-      tableData: [
-        {
-          date: "2016-05-02",
-          name: "王小虎",
-          category: "1",
-          content: "上海市普陀区金沙江路 1518 弄"
-        },
-        {
-          date: "2016-05-04",
-          name: "王小虎",
-          category: "1",
-          content: "上海市普陀区金沙江路 1517 弄"
-        },
-        {
-          date: "2016-05-01",
-          name: "王小虎",
-          category: "1",
-          content: "上海市普陀区金沙江路 1519 弄"
-        },
-        {
-          date: "2016-05-03",
-          name: "王小虎",
-          category: "1",
-          content: "上海市普陀区金沙江路 1516 弄"
-        }
-      ],
-      currentPage: 1
+      articleLists: [],
+      currentPage: 1,
+      total: 0,
+      pageSize: 10
     };
   },
+  created() {
+    this.getArticleList();
+  },
   methods: {
-    editRow(index, row) {
-      console.log(index, row);
+    getArticleList() {
+      this.$axios({
+        url: url.getArticleList,
+        method: "post",
+        data: { currentPage: this.currentPage, pageSize: this.pageSize }
+      })
+        .then(response => {
+          if (response.data.code == 200 && response.data.message) {
+            this.articleLists = response.data.message.data;
+            this.total = response.data.message.total;
+          } else {
+            console.log("获取数据失败");
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
     },
-    deleteRow(index, rows) {
-      rows.splice(index, 1);
+    editRow(index, row) {
+      this.$router.push({
+        name: "blogAdd",
+        params: {
+          id: row._id
+        }
+      });
+    },
+    deleteRow(index, row) {
+      this.$axios({
+        url: url.deleteArticle,
+        method: "post",
+        data: { _id: row._id }
+      })
+        .then(response => {
+          if (response.data.code == 200 && response.data.message) {
+            this.getAllArticleList();
+            this.getArticleList();
+          } else {
+            console.log("获取数据失败");
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
     },
     handleSizeChange(val) {
+      this.pageSize = val;
       console.log(`每页 ${val} 条`);
     },
     handleCurrentChange(val) {
+      this.currentPage = val;
+      this.getArticleList(this.currentPage, this.pageSize);
       console.log(`当前页: ${val}`);
     }
   }
