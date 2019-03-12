@@ -1,11 +1,11 @@
 const mongoose = require('mongoose')
-const moment = require('moment')
 const Schema = mongoose.Schema
 let ObjectId = Schema.Types.ObjectId
 
 const articleSchema = new Schema({
   articleId: ObjectId,
   articleName: String,
+  articleImgurl: String,
   articleContent: String,
   articleClasses: String,
   clickTimes: {
@@ -14,13 +14,14 @@ const articleSchema = new Schema({
   },
   createTime: {
     type: Date,
-    default: Date,
-    get: v => moment(v).format('YYYY-MM-DD HH:mm:ss')
+    default: Date.now(),
   },
   updateTime: {
     type: Date,
-    default: Date
+    default: Date.now()
   }
+},{
+  timestamps: {createdAt: 'createTime', updatedAt: 'updateTime'}
 })
 
 mongoose.model('Articles', articleSchema)

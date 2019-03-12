@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-loading="loading">
     <el-table
       :data="articleLists"
       fit
@@ -16,6 +16,14 @@
         prop="articleName"
         label="博客标题"
       ></el-table-column>
+      <el-table-column
+        label="博客图片"
+      >
+       <template slot-scope="scope">
+       <img :src="scope.row.articleImgurl" class="a_img">
+      </template>
+
+      </el-table-column>
       <el-table-column
         prop="articleClasses"
         label="博客类别"
@@ -65,15 +73,20 @@
 
 <script>
 import url from "@/api.config.js";
+import moment from "moment";
+import "moment/locale/zh-cn";
+moment.locale("zh-cn");
 export default {
   data() {
     return {
       articleLists: [],
       currentPage: 1,
       total: 0,
-      pageSize: 10
+      pageSize: 10,
+      loading: true
     };
   },
+  beforeCreate() {},
   created() {
     this.getArticleList();
   },
@@ -87,7 +100,17 @@ export default {
         .then(response => {
           if (response.data.code == 200 && response.data.message) {
             this.articleLists = response.data.message.data;
+            console.log(this.articleLists);
+            // for (const v of this.articleLists) {
+            //         v.createTime= moment(v.createTime).format('YYYY-MM-DD HH:mm:ss');
+            // }
+            this.articleLists.forEach((v, k) => {
+              this.articleLists[k].createTime = moment(v.createTime).format(
+                "YYYY-MM-DD HH:mm:ss"
+              );
+            });
             this.total = response.data.message.total;
+            this.loading = false;
           } else {
             console.log("获取数据失败");
           }
@@ -112,7 +135,6 @@ export default {
       })
         .then(response => {
           if (response.data.code == 200 && response.data.message) {
-            this.getAllArticleList();
             this.getArticleList();
           } else {
             console.log("获取数据失败");
@@ -125,6 +147,7 @@ export default {
     handleSizeChange(val) {
       this.pageSize = val;
       console.log(`每页 ${val} 条`);
+      this.getArticleList(this.currentPage, this.pageSize);
     },
     handleCurrentChange(val) {
       this.currentPage = val;
@@ -137,6 +160,11 @@ export default {
 <style scoped>
 .page_box {
   padding: 20px 0;
+  text-align: right;
+}
+.a_img{
+  width: 60px;
+  height: 54px;
 }
 </style>
 

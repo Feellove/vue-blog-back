@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 let router = new Router()
 
 router.post('/addArticle', async (ctx) => {
+  console.log(ctx.request.body);
   const Articles = mongoose.model('Articles')
   let newArticles = new Articles(ctx.request.body)
   await newArticles.save().then(() => {
@@ -40,6 +41,7 @@ router.post('/deleteArticle', async (ctx) => {
 router.post('/updateArticle', async (ctx) => {
   let _id = ctx.request.body._id;
   let articleName = ctx.request.body.articleName;
+  let articleImgurl = ctx.request.body.articleImgurl;
   let articleClasses = ctx.request.body.articleClasses;
   let articleContent = ctx.request.body.articleContent;
   const Articles = mongoose.model('Articles')
@@ -47,6 +49,7 @@ router.post('/updateArticle', async (ctx) => {
     _id: _id
   }, {
     articleName: articleName,
+    articleImgurl: articleImgurl,
     articleClasses: articleClasses,
     articleContent: articleContent
   }).then(() => {
@@ -66,13 +69,31 @@ router.post('/updateArticle', async (ctx) => {
 router.post('/getArticleList', async (ctx) => {
   let currentPage = ctx.request.body.currentPage;
   let pageSize = ctx.request.body.pageSize;
-  let c = 0;
   const Articles = mongoose.model('Articles')
+  let c = 0;
   Articles.countDocuments({}, function (err, count) {
     c = count
   })
-  await Articles.find().limit(pageSize)
-    .skip((currentPage - 1) * pageSize)
+  if(currentPage&&pageSize){
+    await Articles.find().limit(pageSize)
+      .skip((currentPage - 1) * pageSize)
+      .then(res => {
+        let result = {
+          data: res,
+          total: c
+        }
+        ctx.body = {
+          code: 200,
+          message: result
+        }
+      }).catch(error => {
+        ctx.body = {
+          code: 500,
+          message: error
+        }
+      })
+  }else{
+    await Articles.find()
     .then(res => {
       let result = {
         data: res,
@@ -88,6 +109,8 @@ router.post('/getArticleList', async (ctx) => {
         message: error
       }
     })
+  }
+
 })
 
 router.post('/getOneArticle', async (ctx) => {
@@ -95,6 +118,7 @@ router.post('/getOneArticle', async (ctx) => {
   const Articles = mongoose.model('Articles')
   await Articles.findById(id)
     .then(res => {
+      console.log(res);
       ctx.body = {
         code: 200,
         message: res
@@ -107,4 +131,5 @@ router.post('/getOneArticle', async (ctx) => {
     })
 
 })
+
 module.exports = router

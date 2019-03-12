@@ -23,6 +23,8 @@ import {
   Aside,
   Pagination,
   Main,
+  Upload,
+  Loading
 } from 'element-ui';
 import App from './App'
 import router from './router'
@@ -30,11 +32,13 @@ Vue.config.productionTip = false
 Vue.prototype.$axios = axios
 Vue.use(Menu).use(Submenu).use(MenuItem).use(MenuItemGroup).use(Input).use(Table).use(TableColumn)
   .use(Container).use(Header).use(Aside).use(Main).use(Button).use(Form).use(FormItem).use(Option)
-  .use(DatePicker).use(Select).use(Col).use(Pagination)
+  .use(DatePicker).use(Select).use(Col).use(Pagination).use(Upload).use(Loading)
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
   router,
-  components: { App },
+  components: {
+    App
+  },
   template: '<App/>'
 })
