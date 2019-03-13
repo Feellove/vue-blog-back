@@ -75,7 +75,7 @@ router.post('/getArticleList', async (ctx) => {
     c = count
   })
   if(currentPage&&pageSize){
-    await Articles.find().limit(pageSize)
+    await Articles.find().sort({'_id':-1}).limit(pageSize)
       .skip((currentPage - 1) * pageSize)
       .then(res => {
         let result = {
@@ -93,7 +93,7 @@ router.post('/getArticleList', async (ctx) => {
         }
       })
   }else{
-    await Articles.find()
+    await Articles.find().sort({'_id':-1})
     .then(res => {
       let result = {
         data: res,
