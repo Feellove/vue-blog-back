@@ -5,6 +5,7 @@ let ObjectId = Schema.Types.ObjectId
 const articleSchema = new Schema({
   articleId: ObjectId,
   articleName: String,
+  articleDesc: String,
   articleImgurl: String,
   articleContent: String,
   articleClasses: String,

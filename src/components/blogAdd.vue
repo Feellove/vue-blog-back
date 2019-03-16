@@ -14,18 +14,18 @@
     </el-form-item>
     <el-form-item
       label="博客头像"
-      prop="articleImgurl"
+      prop="articleUrl"
     >
       <el-upload
         class="avatar-uploader"
-        action="http://localhost:3333"
+        :action="actionUrl"
         :show-file-list="false"
         :on-success="handleAvatarSuccess"
         :before-upload="beforeAvatarUpload"
       >
         <img
-          v-if="ruleForm.articleImgurl"
-          :src="ruleForm.articleImgurl"
+          v-if="ruleForm.articleUrl"
+          :src="ruleForm.articleUrl"
           class="avatar"
         >
         <i
@@ -33,6 +33,15 @@
           class="el-icon-plus avatar-uploader-icon"
         ></i>
       </el-upload>
+    </el-form-item>
+    <el-form-item
+      label="博客简介"
+      prop="desc"
+    >
+      <el-input
+        type="textarea"
+        v-model="ruleForm.desc"
+      ></el-input>
     </el-form-item>
     <el-form-item
       label="博客类别"
@@ -88,15 +97,19 @@ export default {
       editorOption: {
         placeholder: "请编辑文章..."
       },
+      actionUrl: "",
       ruleForm: {
         id: "",
         articleImgurl: "",
+        articleUrl:"",
         name: "",
+        desc: "",
         region: "",
         content: ""
       },
       rules: {
         name: [{ required: true, message: "请输入标题", trigger: "blur" }],
+        desc: [{ required: true, message: "请输入简介内容", trigger: "blur" }],
         articleImgurl: [
           { required: true, message: "请选择图片", trigger: "blur" }
         ],
@@ -106,6 +119,7 @@ export default {
     };
   },
   created() {
+    this.actionUrl = url.upload;
     let id = this.$route.params.id;
     if (id) {
       this.ruleForm.id = id;
@@ -127,15 +141,12 @@ export default {
       this.ruleForm.content = html;
     },
     handleAvatarSuccess(res, file) {
-      // let $this = this
-      // var reader = new FileReader();
-      // if (file.raw) {
-      //   reader.onload = function(event) {
-      //   $this.ruleForm.articleImgurl = event.target.result;
-      //   };
-      //   reader.readAsDataURL(file.raw)
-      // }
-      this.ruleForm.articleImgurl = URL.createObjectURL(file.raw);
+      if (file.response.code === 200) {
+        console.log(file.response.filename);
+        this.ruleForm.articleImgurl =
+          "./static/public/uploads/" + file.response.filename.filename;
+      }
+      this.ruleForm.articleUrl = URL.createObjectURL(file.raw);
     },
     beforeAvatarUpload(file) {
       // const isJPG = file.type === "image/jpeg";
@@ -157,6 +168,7 @@ export default {
         .then(response => {
           if (response.data.code == 200 && response.data.message) {
             this.ruleForm.name = response.data.message.articleName;
+            this.ruleForm.desc = response.data.message.articleDesc;
             this.ruleForm.articleImgurl = response.data.message.articleImgurl;
             this.ruleForm.region = response.data.message.articleClasses;
             this.ruleForm.content = response.data.message.articleContent;
@@ -179,6 +191,7 @@ export default {
               data: {
                 _id: this.ruleForm.id,
                 articleName: this.ruleForm.name,
+                articleDesc: this.ruleForm.desc,
                 articleImgurl: this.ruleForm.articleImgurl,
                 articleClasses: this.ruleForm.region,
                 articleContent: this.ruleForm.content
@@ -201,6 +214,7 @@ export default {
               method: "post",
               data: {
                 articleName: this.ruleForm.name,
+                articleDesc: this.ruleForm.desc,
                 articleImgurl: this.ruleForm.articleImgurl,
                 articleClasses: this.ruleForm.region,
                 articleContent: this.ruleForm.content
@@ -256,5 +270,6 @@ export default {
   width: 196px;
   height: 170px;
   display: block;
+  object-fit: cover;
 }
 </style>

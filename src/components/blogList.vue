@@ -17,6 +17,10 @@
         label="博客标题"
       ></el-table-column>
       <el-table-column
+        prop="articleDesc"
+        label="博客简介"
+      ></el-table-column>
+      <el-table-column
         label="博客图片"
       >
        <template slot-scope="scope">
@@ -165,6 +169,7 @@ export default {
 .a_img{
   width: 60px;
   height: 54px;
+  object-fit: cover
 }
 </style>
 
