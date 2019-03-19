@@ -14,12 +14,14 @@ app.use(cors())
 
 let user = require('./api/user.js')
 let article = require('./api/article.js')
+let classes = require('./api/classes.js')
 
 
 //装载所有子路由
 let router = new Router()
 // router.use('/user',user.routes())
 router.use('/article',article.routes())
+router.use('/classes',classes.routes())
 app.use(router.routes())
 app.use(router.allowedMethods())
 ;(async () => {

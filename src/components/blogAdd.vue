@@ -1,86 +1,125 @@
 <template>
-  <el-form
-    :model="ruleForm"
-    :rules="rules"
-    ref="ruleForm"
-    label-width="100px"
-    class="demo-ruleForm"
-  >
-    <el-form-item
-      label="博客标题"
-      prop="name"
+  <div>
+
+    <el-form
+      :model="ruleForm"
+      :rules="rules"
+      ref="ruleForm"
+      label-width="100px"
+      class="demo-ruleForm"
     >
-      <el-input v-model="ruleForm.name"></el-input>
-    </el-form-item>
-    <el-form-item
-      label="博客头像"
-      prop="articleUrl"
-    >
-      <el-upload
-        class="avatar-uploader"
-        :action="actionUrl"
-        :show-file-list="false"
-        :on-success="handleAvatarSuccess"
-        :before-upload="beforeAvatarUpload"
+      <el-form-item
+        label="博客标题"
+        prop="name"
       >
-        <img
-          v-if="ruleForm.articleUrl"
-          :src="ruleForm.articleUrl"
-          class="avatar"
+        <el-input v-model="ruleForm.name"></el-input>
+      </el-form-item>
+      <el-form-item
+        label="博客头像"
+        prop="articleUrl"
+      >
+        <el-upload
+          class="avatar-uploader"
+          :action="actionUrl"
+          :show-file-list="false"
+          :on-success="handleAvatarSuccess"
+          :before-upload="beforeAvatarUpload"
         >
-        <i
-          v-else
-          class="el-icon-plus avatar-uploader-icon"
-        ></i>
-      </el-upload>
-    </el-form-item>
-    <el-form-item
-      label="博客简介"
-      prop="desc"
-    >
-      <el-input
-        type="textarea"
-        v-model="ruleForm.desc"
-      ></el-input>
-    </el-form-item>
-    <el-form-item
-      label="博客类别"
-      prop="region"
-    >
-      <el-select
-        v-model="ruleForm.region"
-        placeholder="请选择类别"
+          <img
+            v-if="ruleForm.articleUrl"
+            :src="ruleForm.articleUrl"
+            class="avatar"
+          >
+          <i
+            v-else
+            class="el-icon-plus avatar-uploader-icon"
+          ></i>
+        </el-upload>
+      </el-form-item>
+      <el-form-item
+        label="博客简介"
+        prop="desc"
       >
-        <el-option
-          label="前端"
-          value="前端"
-        ></el-option>
-        <el-option
-          label="后端"
-          value="后端"
-        ></el-option>
-      </el-select>
-    </el-form-item>
-    <el-form-item
-      label="博客内容"
-      prop="content"
+        <el-input
+          type="textarea"
+          v-model="ruleForm.desc"
+        ></el-input>
+      </el-form-item>
+      <el-form-item
+        label="博客类别"
+        prop="region"
+      >
+        <el-select
+          v-model="ruleForm.region"
+          placeholder="请选择类别"
+        >
+          <el-option v-for="(v,index) in classes" :key="index"
+            :label="v.classesName"
+            :value="v.classesName"
+          ></el-option>
+        </el-select>
+        <el-button
+          type="primary"
+          @click="dialogFormVisible = true"
+        >新建类别</el-button>
+      </el-form-item>
+      <el-form-item
+        label="博客内容"
+        prop="content"
+      >
+        <quill-editor
+          v-model="ruleForm.content"
+          class="editor"
+          ref="quillEditor"
+          :options="editorOption"
+          @ready="onEditorReady($event)"
+        ></quill-editor>
+      </el-form-item>
+      <el-form-item>
+        <el-button
+          type="primary"
+          @click="submitForm('ruleForm')"
+        >立即创建</el-button>
+        <el-button @click="resetForm('ruleForm')">重置</el-button>
+      </el-form-item>
+    </el-form>
+    <el-dialog
+      title="新建类别"
+      :visible.sync="dialogFormVisible"
     >
-      <quill-editor
-        v-model="ruleForm.content"
-        class="editor"
-        ref="quillEditor"
-        :options="editorOption"
-        @ready="onEditorReady($event)"
-      ></quill-editor>
-    </el-form-item>
-    <el-form-item>
-      <el-button
-        type="primary"
-        @click="submitForm('ruleForm')"
-      >立即创建</el-button>
-      <el-button @click="resetForm('ruleForm')">重置</el-button>
-    </el-form-item>
-  </el-form>
+      <el-form :model="dialogForm">
+        <el-form-item
+          label="类别名称"
+          :label-width="formLabelWidth"
+        >
+          <el-input
+            v-model="dialogForm.name"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item
+          label="类别描述"
+          :label-width="formLabelWidth"
+        >
+          <el-input
+            type="textarea"
+            v-model="dialogForm.desc"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <div
+        slot="footer"
+        class="dialog-footer"
+      >
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button
+          type="primary"
+          @click="addClasses"
+        >确 定</el-button>
+      </div>
+    </el-dialog>
+  </div>
 </template>
 <script>
 import url from "@/api.config.js";
@@ -101,7 +140,7 @@ export default {
       ruleForm: {
         id: "",
         articleImgurl: "",
-        articleUrl:"",
+        articleUrl: "",
         name: "",
         desc: "",
         region: "",
@@ -115,21 +154,29 @@ export default {
         ],
         region: [{ required: true, message: "请选择类别", trigger: "change" }],
         content: [{ required: true, message: "请编辑文章...", trigger: "blur" }]
-      }
+      },
+      dialogFormVisible: false,
+      dialogForm: {
+        name: "",
+        desc: ""
+      },
+      classes:[],
+      formLabelWidth: "120px"
     };
   },
   created() {
-    this.actionUrl = url.upload;
-    let id = this.$route.params.id;
+    this.getClasses()
+    this.actionUrl = url.upload
+    let id = this.$route.params.id
     if (id) {
-      this.ruleForm.id = id;
-      this.getRuleForm(this.ruleForm.id);
+      this.ruleForm.id = id
+      this.getRuleForm(this.ruleForm.id)
     }
   },
   mounted() {},
   computed: {
     edtior() {
-      return this.$refs.quillEditor.quill;
+      return this.$refs.quillEditor.quill
     }
   },
   methods: {
@@ -239,7 +286,48 @@ export default {
       });
     },
     resetForm(formName) {
-      this.$refs[formName].resetFields();
+      this.$refs[formName].resetFields()
+    },
+    addClasses() {
+      console.log(this.dialogForm.name);
+      this.$axios({
+        url: url.addClasses,
+        method: "post",
+        data: {
+          classesName: this.dialogForm.name,
+          classesDesc: this.dialogForm.desc
+        }
+      })
+        .then(response => {
+          if (response.data.code === 200 && response.data.message) {
+            console.log("创建成功");
+            this.dialogFormVisible = false
+             this.getClasses()
+          } else {
+            console.log("创建失败");
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+    getClasses() {
+      this.$axios({
+        url: url.getClasses,
+        method: "post",
+        data: {}
+      })
+        .then(response => {
+          if (response.data.code === 200 && response.data.message) {
+            this.classes = response.data.message
+            console.log(this.classes)
+          } else {
+            console.log("获取失败")
+          }
+        })
+        .catch(error => {
+          console.log(error)
+        });
     }
   }
 };
