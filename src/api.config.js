@@ -8,7 +8,10 @@ const URL = {
   deleteArticle: LOCALURL + 'article/deleteArticle',
   updateArticle: LOCALURL + 'article/updateArticle',
   addClasses: LOCALURL + 'classes/addClasses',
+  updateClasses: LOCALURL + 'classes/updateClasses',
+  delClasses: LOCALURL + 'classes/delClasses',
   getClasses: LOCALURL + 'classes/getClasses',
+  getOneClasses: LOCALURL + 'classes/getOneClasses',
   login: LOCALURL + 'user/login'
 }
 module.exports = URL

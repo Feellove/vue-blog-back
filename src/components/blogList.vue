@@ -1,5 +1,11 @@
 <template>
   <div v-loading="loading">
+    <div class="create_btn">
+      <el-button
+        type="primary"
+        @click="newArticle"
+      >新建文章</el-button>
+    </div>
     <el-table
       :data="articleLists"
       fit
@@ -20,16 +26,16 @@
         prop="articleDesc"
         label="博客简介"
       ></el-table-column>
-      <el-table-column
-        label="博客图片"
-      >
-       <template slot-scope="scope">
-       <img :src="scope.row.articleImgurl" class="a_img">
-      </template>
-
+      <el-table-column label="博客图片">
+        <template slot-scope="scope">
+          <img
+            :src="scope.row.articleImgurl"
+            class="a_img"
+          >
+        </template>
       </el-table-column>
       <el-table-column
-        prop="articleClasses"
+        prop="classesId.classesName"
         label="博客类别"
       ></el-table-column>
       <el-table-column
@@ -40,6 +46,19 @@
         prop="clickTimes"
         label="点击量"
       ></el-table-column>
+      <el-table-column
+        prop="tags"
+        label="标签"
+      >
+        <template slot-scope="scope">
+          <el-tag
+            type="primary"
+            disable-transitions
+            v-for="(tag,index) in scope.row.tags"
+            :key="index"
+          >{{tag}}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button
@@ -47,7 +66,7 @@
             type="primary"
             icon="el-icon-edit"
             circle
-            @click="editRow(scope.$index,scope.row)"
+            @click="editArticle(scope.$index,scope.row)"
             title="编辑"
           ></el-button>
           <el-button
@@ -55,7 +74,7 @@
             type="danger"
             icon="el-icon-delete"
             circle
-            @click="deleteRow(scope.$index,scope.row)"
+            @click="deleteArticle(scope.$index,scope.row)"
             title="删除"
           ></el-button>
         </template>
@@ -104,10 +123,6 @@ export default {
         .then(response => {
           if (response.data.code == 200 && response.data.message) {
             this.articleLists = response.data.message.data;
-            console.log(this.articleLists);
-            // for (const v of this.articleLists) {
-            //         v.createTime= moment(v.createTime).format('YYYY-MM-DD HH:mm:ss');
-            // }
             this.articleLists.forEach((v, k) => {
               this.articleLists[k].createTime = moment(v.createTime).format(
                 "YYYY-MM-DD HH:mm:ss"
@@ -116,14 +131,27 @@ export default {
             this.total = response.data.message.total;
             this.loading = false;
           } else {
-            console.log("获取数据失败");
+            this.$message({
+              showClose: true,
+              message: "获取数据失败",
+              type: "error"
+            });
           }
         })
         .catch(error => {
-          console.log(error);
+          this.$message({
+            showClose: true,
+            message: error,
+            type: "error"
+          });
         });
     },
-    editRow(index, row) {
+    newArticle() {
+      this.$router.push({
+        name: "blogAdd"
+      });
+    },
+    editArticle(index, row) {
       this.$router.push({
         name: "blogAdd",
         params: {
@@ -131,7 +159,7 @@ export default {
         }
       });
     },
-    deleteRow(index, row) {
+    deleteArticle(index, row) {
       this.$axios({
         url: url.deleteArticle,
         method: "post",
@@ -139,9 +167,18 @@ export default {
       })
         .then(response => {
           if (response.data.code == 200 && response.data.message) {
+             this.$message({
+              showClose: true,
+              message: "删除成功",
+              type: "success"
+            });
             this.getArticleList();
           } else {
-            console.log("获取数据失败");
+            this.$message({
+              showClose: true,
+              message: "删除失败",
+              type: "error"
+            });
           }
         })
         .catch(error => {
@@ -166,10 +203,14 @@ export default {
   padding: 20px 0;
   text-align: right;
 }
-.a_img{
+.a_img {
   width: 60px;
   height: 54px;
-  object-fit: cover
+  object-fit: cover;
+}
+.create_btn {
+  text-align: right;
+  margin-bottom: 20px;
 }
 </style>
 

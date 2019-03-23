@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <el-form
       :model="ruleForm"
       :rules="rules"
@@ -46,22 +45,50 @@
         ></el-input>
       </el-form-item>
       <el-form-item
+        label="博客标签"
+        prop="tags"
+      >
+        <el-tag
+          :key="tag"
+          v-for="tag in ruleForm.tags"
+          closable
+          :disable-transitions="false"
+          @close="handleClose(tag)"
+        >
+          {{tag}}
+        </el-tag>
+        <el-input
+          class="input-new-tag"
+          v-if="inputVisible"
+          v-model="inputValue"
+          ref="saveTagInput"
+          size="small"
+          @keyup.enter.native="handleInputConfirm"
+          @blur="handleInputConfirm"
+        >
+        </el-input>
+        <el-button
+          v-else
+          class="button-new-tag"
+          size="small"
+          @click="showInput"
+        >+增加</el-button>
+      </el-form-item>
+      <el-form-item
         label="博客类别"
-        prop="region"
+        prop="classesId"
       >
         <el-select
-          v-model="ruleForm.region"
+          v-model="ruleForm.classesId"
           placeholder="请选择类别"
         >
-          <el-option v-for="(v,index) in classes" :key="index"
+          <el-option
+            v-for="(v,index) in classes"
+            :key="index"
             :label="v.classesName"
-            :value="v.classesName"
+            :value="v._id"
           ></el-option>
         </el-select>
-        <el-button
-          type="primary"
-          @click="dialogFormVisible = true"
-        >新建类别</el-button>
       </el-form-item>
       <el-form-item
         label="博客内容"
@@ -83,42 +110,6 @@
         <el-button @click="resetForm('ruleForm')">重置</el-button>
       </el-form-item>
     </el-form>
-    <el-dialog
-      title="新建类别"
-      :visible.sync="dialogFormVisible"
-    >
-      <el-form :model="dialogForm">
-        <el-form-item
-          label="类别名称"
-          :label-width="formLabelWidth"
-        >
-          <el-input
-            v-model="dialogForm.name"
-            autocomplete="off"
-          ></el-input>
-        </el-form-item>
-        <el-form-item
-          label="类别描述"
-          :label-width="formLabelWidth"
-        >
-          <el-input
-            type="textarea"
-            v-model="dialogForm.desc"
-            autocomplete="off"
-          ></el-input>
-        </el-form-item>
-      </el-form>
-      <div
-        slot="footer"
-        class="dialog-footer"
-      >
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button
-          type="primary"
-          @click="addClasses"
-        >确 定</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 <script>
@@ -134,17 +125,54 @@ export default {
   data() {
     return {
       editorOption: {
-        placeholder: "请编辑文章..."
+        placeholder: "请编辑文章...",
+        modules: {
+          toolbar: [
+            ["bold", "italic", "underline", "strike"], //加粗，斜体，下划线，删除线
+            ["blockquote", "code-block"], //引用，代码块
+            [{ header: 1 }, { header: 2 }], // 标题，键值对的形式；1、2表示字体大小
+            [{ list: "ordered" }, { list: "bullet" }], //列表
+            [{ script: "sub" }, { script: "super" }], // 上下标
+            [{ indent: "-1" }, { indent: "+1" }], // 缩进
+            [{ direction: "rtl" }], // 文本方向
+            [
+              {
+                size: [
+                  "10px",
+                  "12px",
+                  "14px",
+                  "16px",
+                  "18px",
+                  "20px",
+                  "22px",
+                  "24px",
+                  "26px",
+                  "32px",
+                  "48px"
+                ]
+              }
+            ], // 字体大小
+            [{ header: [1, 2, 3, 4, 5, 6, false] }], //几级标题
+            [{ color: [] }, { background: [] }], // 字体颜色，字体背景颜色
+            [{ font: [] }], //字体
+            [{ align: [] }], //对齐方式
+            ["clean"], //清除字体样式
+            ["image", "video"] //上传图片、上传视频
+          ]
+        }
       },
       actionUrl: "",
+      inputVisible: false,
+      inputValue: "",
       ruleForm: {
         id: "",
         articleImgurl: "",
         articleUrl: "",
         name: "",
         desc: "",
-        region: "",
-        content: ""
+        classesId: "",
+        content: "",
+        tags: []
       },
       rules: {
         name: [{ required: true, message: "请输入标题", trigger: "blur" }],
@@ -152,31 +180,34 @@ export default {
         articleImgurl: [
           { required: true, message: "请选择图片", trigger: "blur" }
         ],
-        region: [{ required: true, message: "请选择类别", trigger: "change" }],
-        content: [{ required: true, message: "请编辑文章...", trigger: "blur" }]
+        classesId: [
+          { required: true, message: "请选择类别", trigger: "change" }
+        ],
+        content: [
+          { required: true, message: "请编辑文章...", trigger: "blur" }
+        ],
+        classesName: [
+          { required: true, message: "请输入类名", trigger: "blur" }
+        ]
       },
       dialogFormVisible: false,
-      dialogForm: {
-        name: "",
-        desc: ""
-      },
-      classes:[],
-      formLabelWidth: "120px"
+      classes: []
     };
   },
   created() {
-    this.getClasses()
-    this.actionUrl = url.upload
-    let id = this.$route.params.id
+    this.getClasses();
+    this.actionUrl = url.upload;
+    let id = this.$route.params.id;
+    console.log(id);
     if (id) {
-      this.ruleForm.id = id
-      this.getRuleForm(this.ruleForm.id)
+      this.ruleForm.id = id;
+      this.getRuleForm(this.ruleForm.id);
     }
   },
   mounted() {},
   computed: {
     edtior() {
-      return this.$refs.quillEditor.quill
+      return this.$refs.quillEditor.quill;
     }
   },
   methods: {
@@ -217,9 +248,9 @@ export default {
             this.ruleForm.name = response.data.message.articleName;
             this.ruleForm.desc = response.data.message.articleDesc;
             this.ruleForm.articleImgurl = response.data.message.articleImgurl;
-            this.ruleForm.region = response.data.message.articleClasses;
+            this.ruleForm.classesId = response.data.message.classesId;
+            this.ruleForm.tags = response.data.message.tags;
             this.ruleForm.content = response.data.message.articleContent;
-            console.log(response.data.message);
           } else {
             console.log("获取数据失败");
           }
@@ -240,22 +271,39 @@ export default {
                 articleName: this.ruleForm.name,
                 articleDesc: this.ruleForm.desc,
                 articleImgurl: this.ruleForm.articleImgurl,
-                articleClasses: this.ruleForm.region,
+                classesId: this.ruleForm.classesId,
+                tags: this.ruleForm.tags,
                 articleContent: this.ruleForm.content
               }
             })
               .then(response => {
                 console.log(response);
                 if (response.data.code == 200 && response.data.message) {
-                  console.log("更新成功");
+                  this.$message({
+                    showClose: true,
+                    message: "更新成功",
+                    type: "success"
+                  });
+                  this.$router.push({
+                    name: "blogList"
+                  });
                 } else {
-                  console.log("更新失败");
+                  this.$message({
+                    showClose: true,
+                    message: "更新失败",
+                    type: "success"
+                  });
                 }
               })
               .catch(error => {
-                console.log(error);
+                this.$message({
+                  showClose: true,
+                  message: error,
+                  type: "error"
+                });
               });
           } else {
+            console.log(this.ruleForm.tags);
             this.$axios({
               url: url.addArticle,
               method: "post",
@@ -263,53 +311,48 @@ export default {
                 articleName: this.ruleForm.name,
                 articleDesc: this.ruleForm.desc,
                 articleImgurl: this.ruleForm.articleImgurl,
-                articleClasses: this.ruleForm.region,
+                classesId: this.ruleForm.classesId,
+                tags: this.ruleForm.tags,
                 articleContent: this.ruleForm.content
               }
             })
               .then(response => {
-                console.log(response);
                 if (response.data.code == 200 && response.data.message) {
-                  console.log("创建成功");
+                  this.$message({
+                    showClose: true,
+                    message: "创建成功",
+                    type: "success"
+                  });
+                  this.$router.push({
+                    name: "blogList"
+                  });
                 } else {
-                  console.log("创建失败");
+                  this.$message({
+                    showClose: true,
+                    message: "创建失败",
+                    type: "error"
+                  });
                 }
               })
               .catch(error => {
-                console.log(error);
+                this.$message({
+                  showClose: true,
+                  message: "创建失败",
+                  type: "error"
+                });
               });
           }
         } else {
-          console.log("error submit!!");
-          return false;
+          this.$message({
+            showClose: true,
+            message: "提交错误",
+            type: "error"
+          });
         }
       });
     },
     resetForm(formName) {
-      this.$refs[formName].resetFields()
-    },
-    addClasses() {
-      console.log(this.dialogForm.name);
-      this.$axios({
-        url: url.addClasses,
-        method: "post",
-        data: {
-          classesName: this.dialogForm.name,
-          classesDesc: this.dialogForm.desc
-        }
-      })
-        .then(response => {
-          if (response.data.code === 200 && response.data.message) {
-            console.log("创建成功");
-            this.dialogFormVisible = false
-             this.getClasses()
-          } else {
-            console.log("创建失败");
-          }
-        })
-        .catch(error => {
-          console.log(error);
-        });
+      this.$refs[formName].resetFields();
     },
     getClasses() {
       this.$axios({
@@ -319,15 +362,39 @@ export default {
       })
         .then(response => {
           if (response.data.code === 200 && response.data.message) {
-            this.classes = response.data.message
-            console.log(this.classes)
+            this.classes = response.data.message;
           } else {
-            console.log("获取失败")
+            this.$message({
+              showClose: true,
+              message: "获取失败",
+              type: "error"
+            });
           }
         })
         .catch(error => {
-          console.log(error)
+          this.$message({
+            showClose: true,
+            message: error,
+            type: "error"
+          });
         });
+    },
+    handleClose(tag) {
+      this.ruleForm.tags.splice(this.ruleForm.tags.indexOf(tag), 1);
+    },
+    showInput() {
+      this.inputVisible = true;
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+    handleInputConfirm() {
+      let inputValue = this.inputValue;
+      if (inputValue) {
+        this.ruleForm.tags.push(inputValue);
+      }
+      this.inputVisible = false;
+      this.inputValue = "";
     }
   }
 };
@@ -359,5 +426,20 @@ export default {
   height: 170px;
   display: block;
   object-fit: cover;
+}
+.el-tag + .el-tag {
+  margin-left: 10px;
+}
+.button-new-tag {
+  margin-left: 10px;
+  height: 32px;
+  line-height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.input-new-tag {
+  width: 90px;
+  margin-left: 10px;
+  vertical-align: bottom;
 }
 </style>

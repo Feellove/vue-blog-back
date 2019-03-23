@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import home from '@/components/home'
 import blogList from '@/components/blogList'
 import blogAdd from '@/components/blogAdd.vue';
+import blogClasses from '@/components/blogClasses.vue';
 import blogComment from '@/components/blogComment.vue';
 import blogLogin from '@/components/blogLogin.vue';
 Vue.use(Router)
@@ -27,6 +28,11 @@ export default new Router({
           path: '/blogAdd',
           name: 'blogAdd',
           component: blogAdd
+        },
+        {
+          path: '/blogClasses',
+          name: 'blogClasses',
+          component: blogClasses
         },
         {
           path: '/blogComment',

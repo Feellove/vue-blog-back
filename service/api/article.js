@@ -18,16 +18,14 @@ let upload = multer({
   storage: storage
 });
 //路由
-router.post('/upload',upload.single('file'), async (ctx) => {
-  console.log(ctx.request.body);
+router.post('/upload', upload.single('file'), async (ctx) => {
   ctx.body = {
-    filename: ctx.req.file,//返回文件名
+    filename: ctx.req.file, //返回文件名
     code: 200,
     message: '成功'
   }
 })
 router.post('/addArticle', async (ctx) => {
-  console.log(ctx.request.body);
   const Articles = mongoose.model('Articles')
   let newArticles = new Articles(ctx.request.body)
   await newArticles.save().then(() => {
@@ -67,7 +65,8 @@ router.post('/updateArticle', async (ctx) => {
   let articleName = ctx.request.body.articleName;
   let articleDesc = ctx.request.body.articleDesc;
   let articleImgurl = ctx.request.body.articleImgurl;
-  let articleClasses = ctx.request.body.articleClasses;
+  let classesId = ctx.request.body.classesId;
+  let tags = ctx.request.body.tags;
   let articleContent = ctx.request.body.articleContent;
   const Articles = mongoose.model('Articles')
   await Articles.updateOne({
@@ -76,7 +75,8 @@ router.post('/updateArticle', async (ctx) => {
     articleName: articleName,
     articleDesc: articleDesc,
     articleImgurl: articleImgurl,
-    articleClasses: articleClasses,
+    classesId: classesId,
+    tags: tags,
     articleContent: articleContent
   }).then(() => {
     ctx.body = {
@@ -101,9 +101,11 @@ router.post('/getArticleList', async (ctx) => {
     c = count
   })
   if (currentPage && pageSize) {
-    await Articles.find().sort({
+    await Articles.find().populate('classesId')
+      .sort({
         '_id': -1
-      }).limit(pageSize)
+      })
+      .limit(pageSize)
       .skip((currentPage - 1) * pageSize)
       .then(res => {
         let result = {
@@ -121,7 +123,7 @@ router.post('/getArticleList', async (ctx) => {
         }
       })
   } else {
-    await Articles.find().sort({
+    await Articles.find().populate('classesId').sort({
         '_id': -1
       })
       .then(res => {
@@ -148,7 +150,50 @@ router.post('/getOneArticle', async (ctx) => {
   const Articles = mongoose.model('Articles')
   await Articles.findById(id)
     .then(res => {
-      console.log(res);
+      ctx.body = {
+        code: 200,
+        message: res
+      }
+    }).catch(error => {
+      ctx.body = {
+        code: 500,
+        message: error
+      }
+    })
+
+})
+
+router.post('/searchArticle', async (ctx) => {
+  const keyword = ctx.request.body.keyword //从URL中传来的 keyword参数
+  const reg = new RegExp(keyword, 'i') //不区分大小写
+  const Articles = mongoose.model('Articles')
+  await Articles.find({
+      $or: [ //多条件，数组
+        {
+          articleClasses: {
+            $regex: reg
+          }
+        },
+        {
+          articleName: {
+            $regex: reg
+          }
+        },
+        {
+          articleDesc: {
+            $regex: reg
+          }
+        },
+        {
+          tags: {
+            $regex: reg
+          }
+        },
+      ]
+    }).sort({
+      '_id': -1
+    })
+    .then(res => {
       ctx.body = {
         code: 200,
         message: res
