@@ -187,13 +187,11 @@ export default {
     },
     handleSizeChange(val) {
       this.pageSize = val;
-      console.log(`每页 ${val} 条`);
       this.getArticleList(this.currentPage, this.pageSize);
     },
     handleCurrentChange(val) {
       this.currentPage = val;
       this.getArticleList(this.currentPage, this.pageSize);
-      console.log(`当前页: ${val}`);
     }
   }
 };

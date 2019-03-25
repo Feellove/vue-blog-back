@@ -162,6 +162,24 @@ router.post('/getOneArticle', async (ctx) => {
     })
 
 })
+router.post('/getByClassesIdArticle', async (ctx) => {
+    let classesId = ctx.request.body.classesId;
+    const Articles = mongoose.model('Articles')
+    await Articles.findById(classesId)
+      .then(res => {
+        ctx.body = {
+          code: 200,
+          message: res
+        }
+      }).catch(error => {
+        ctx.body = {
+          code: 500,
+          message: error
+        }
+      })
+
+  })
+
 
 router.post('/searchArticle', async (ctx) => {
   const keyword = ctx.request.body.keyword //从URL中传来的 keyword参数
