@@ -1,73 +1,201 @@
 <template>
-  <el-table :data="tableData" border stripe style="width: 100%">
-    <el-table-column type="selection" width="36"></el-table-column>
-    <el-table-column prop="date" label="评论时间" width="180"></el-table-column>
-    <el-table-column prop="name" label="评论内容" width="180"></el-table-column>
-    <el-table-column prop="category" label="回复内容" width="180"></el-table-column>
-    <el-table-column prop="content" label="评论名字"></el-table-column>
-    <el-table-column label="操作" width="180">
-      <template slot-scope="scope">
+  <div>
+    <el-table
+      :data="commentLists"
+      fit
+      border
+      stripe
+      style="width: 100%"
+    >
+      <el-table-column
+        prop="_id"
+        label="用户名"
+      ></el-table-column>
+      <el-table-column
+        prop="commentContent"
+        label="评论内容"
+      ></el-table-column>
+      <el-table-column
+        prop="commentreply"
+        label="回复内容"
+      ></el-table-column>
+      <el-table-column label="操作">
+        <template slot-scope="scope">
+          <el-button
+            size="medium"
+            type="primary"
+            icon="el-icon-edit"
+            circle
+            @click="openDialog(scope.row._id)"
+            title="回复"
+          ></el-button>
+          <el-button
+            size="medium"
+            type="danger"
+            icon="el-icon-delete"
+            circle
+            @click="delComment(scope.row._id)"
+            title="删除"
+          ></el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-dialog
+      title="回复"
+      :visible.sync="dialogFormVisible"
+    >
+      <el-form
+        :model="commentForm"
+        :rules="rules"
+        ref="commentForm"
+      >
+        <el-form-item
+          label="回复内容"
+          :label-width="formLabelWidth"
+        >
+          <el-input
+            type="textarea"
+            v-model="commentForm.commentreply"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <div
+        slot="footer"
+        class="dialog-footer"
+      >
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
         <el-button
-          size="medium"
           type="primary"
-          icon="el-icon-service"
-          circle
-          @click="editRow(scope.$index,scope.row)"
-          title="回复"
-        ></el-button>
-        <el-button
-          size="medium"
-          type="danger"
-          icon="el-icon-delete"
-          circle
-          @click="deleteRow(scope.$index, tableData)"
-          title="删除"
-        ></el-button>
-      </template>
-    </el-table-column>
-  </el-table>
+          @click="editComment('commentForm')"
+        >确 定</el-button>
+      </div>
+    </el-dialog>
+  </div>
 </template>
-
 <script>
+import url from "@/api.config.js";
 export default {
   data() {
     return {
-      tableData: [
-        {
-          date: "2016-05-02",
-          name: "王小虎",
-          category: "1",
-          content: "上海市普陀区金沙江路 1518 弄"
-        },
-        {
-          date: "2016-05-04",
-          name: "王小虎",
-          category: "1",
-          content: "上海市普陀区金沙江路 1517 弄"
-        },
-        {
-          date: "2016-05-01",
-          name: "王小虎",
-          category: "1",
-          content: "上海市普陀区金沙江路 1519 弄"
-        },
-        {
-          date: "2016-05-03",
-          name: "王小虎",
-          category: "1",
-          content: "上海市普陀区金沙江路 1516 弄"
-        }
-      ]
+      formLabelWidth: "120px",
+      commentForm: {
+        id: "",
+        commentreply: ""
+      },
+      rules: {
+        commentrply: [
+          { required: true, message: "请输入内容", trigger: "blur" }
+        ]
+      },
+      dialogFormVisible: false,
+      commentLists: []
     };
   },
+  created() {
+    this.getCommentLists();
+  },
   methods: {
-    editRow(index, row) {
-      console.log(index, row);
+    getCommentLists() {
+      this.$axios({
+        url: url.getMessage,
+        method: "post",
+        data: {}
+      })
+        .then(response => {
+          if (response.data.code === 200 && response.data.message) {
+            this.commentLists = response.data.message;
+          } else {
+            this.$message({
+              showClose: true,
+              message: "获取失败",
+              type: "error"
+            });
+          }
+        })
+        .catch(error => {
+          this.$message({
+            showClose: true,
+            message: error,
+            type: "error"
+          });
+        });
     },
-    deleteRow(index, rows) {
-      rows.splice(index, 1);
+    delComment(id) {
+      this.$axios({
+        url: url.delMessage,
+        method: "post",
+        data: {
+          id: id
+        }
+      })
+        .then(response => {
+          if (response.data.code === 200 && response.data.message) {
+            this.$message({
+              showClose: true,
+              message: "删除成功",
+              type: "success"
+            });
+            this.getCommentLists();
+          } else {
+            this.$message({
+              showClose: true,
+              message: "删除失败",
+              type: "error"
+            });
+          }
+        })
+        .catch(error => {
+          this.$message({
+            showClose: true,
+            message: error,
+            type: "error"
+          });
+        });
+    },
+    editComment(formName) {
+      this.$refs[formName].validate(valid => {
+        if (valid) {
+          this.$axios({
+            url: url.updateMessage,
+            method: "post",
+            data: {
+              id: this.commentForm.id,
+              commentreply: this.commentForm.commentreply
+            }
+          })
+            .then(response => {
+              if (response.data.code === 200 && response.data.message) {
+                this.$message({
+                  showClose: true,
+                  message: "回复成功",
+                  type: "success"
+                });
+                this.dialogFormVisible = false;
+                this.getCommentLists();
+              } else {
+                this.$message({
+                  showClose: true,
+                  message: "回复失败",
+                  type: "error"
+                });
+              }
+            })
+            .catch(error => {
+              this.$message({
+                showClose: true,
+                message: error,
+                type: "success"
+              });
+            });
+        }
+      });
+    },
+
+    openDialog(id) {
+      this.dialogFormVisible = true;
+      this.commentForm.id = id;
     }
   }
 };
 </script>
-

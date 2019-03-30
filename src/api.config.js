@@ -12,6 +12,9 @@ const URL = {
   delClasses: LOCALURL + 'classes/delClasses',
   getClasses: LOCALURL + 'classes/getClasses',
   getOneClasses: LOCALURL + 'classes/getOneClasses',
-  login: LOCALURL + 'user/login'
+  login: LOCALURL + 'user/login',
+  getMessage: LOCALURL + 'message/getMessage',
+  updateMessage: LOCALURL + 'message/updateMessage',
+  delMessage: LOCALURL + 'message/delMessage'
 }
 module.exports = URL

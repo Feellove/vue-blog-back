@@ -188,11 +188,6 @@ router.post('/searchArticle', async (ctx) => {
   await Articles.find({
       $or: [ //多条件，数组
         {
-          articleClasses: {
-            $regex: reg
-          }
-        },
-        {
           articleName: {
             $regex: reg
           }

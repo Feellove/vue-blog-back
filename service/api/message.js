@@ -36,4 +36,38 @@ router.post('/getMessage', async (ctx) => {
   })
 
 })
+
+router.post('/updateMessage', async (ctx) => {
+  const Message = mongoose.model('Message')
+  await Message.updateOne({_id:ctx.request.body.id},{
+    commentreply: ctx.request.body.commentreply
+  }).then(res => {
+    ctx.body = {
+      code: 200,
+      message: res
+    }
+  }).catch((error) => {
+    ctx.body = {
+      code: 500,
+      message: error
+    }
+  })
+})
+router.post('/delMessage', async (ctx) => {
+  const Message = mongoose.model('Message')
+  await Message.deleteOne({
+    _id: ctx.request.body.id
+  }).then(res => {
+    ctx.body = {
+      code: 200,
+      message: res
+    }
+  }).catch((error) => {
+    ctx.body = {
+      code: 500,
+      message: error
+    }
+  })
+
+})
 module.exports = router

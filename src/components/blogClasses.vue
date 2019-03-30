@@ -84,7 +84,7 @@
         <el-button @click="dialogFormVisible = false">取 消</el-button>
         <el-button
           type="primary"
-          @click="classesForm.id?addClasses('classesForm'):editClasses('classesForm')"
+          @click="classesForm.id?editClasses('classesForm'):addClasses('classesForm')"
         >确 定</el-button>
       </div>
     </el-dialog>
